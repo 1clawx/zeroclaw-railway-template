@@ -185,7 +185,7 @@ validate_tenant_startup() {
     local response
     response=$(curl -sf -X POST "${BACKEND_URL}/tenant-validate" \
         -H "Content-Type: application/json" \
-        -H "x-service-key: ${SERVICE_AUTH_KEY}" \
+        -H "x-tenant-key: ${TENANT_AUTH_KEY}" \
         -d "{\"tenant_id\": \"${TENANT_ID}\"}" 2>&1) || true
 
     if [ -z "$response" ]; then
@@ -219,7 +219,7 @@ validate_tenant_periodic() {
         local response
         response=$(curl -sf -X POST "${BACKEND_URL}/tenant-validate" \
             -H "Content-Type: application/json" \
-            -H "x-service-key: ${SERVICE_AUTH_KEY}" \
+            -H "x-tenant-key: ${TENANT_AUTH_KEY}" \
             -d "{\"tenant_id\": \"${TENANT_ID}\"}" 2>&1) || true
 
         if [ -z "$response" ]; then
@@ -251,7 +251,7 @@ start_health_server() {
 
 generate_managed_config() {
     # Validate required env vars
-    local required_vars="BOT_TOKEN TENANT_ID BACKEND_URL OPENROUTER_API_KEY DEFAULT_MODEL TELEGRAM_USERNAME"
+    local required_vars="BOT_TOKEN TENANT_ID BACKEND_URL OPENROUTER_API_KEY DEFAULT_MODEL TELEGRAM_USERNAME TENANT_AUTH_KEY"
     for var in $required_vars; do
         if [ -z "${!var}" ]; then
             echo "ERROR: Required env var $var is not set. Cannot start managed bot."
@@ -329,7 +329,7 @@ notify_provision_complete() {
     local response
     response=$(curl -sf -X POST "${BACKEND_URL}/provision-complete" \
         -H "Content-Type: application/json" \
-        -H "x-service-key: ${SERVICE_AUTH_KEY}" \
+        -H "x-tenant-key: ${TENANT_AUTH_KEY}" \
         -d "{\"tenant_id\": \"${TENANT_ID}\"}" 2>&1) || true
 
     if [ -n "$response" ]; then
