@@ -199,8 +199,13 @@ validate_tenant_startup() {
     if [ "$valid" != "true" ]; then
         local reason
         reason=$(echo "$response" | jq -r '.reason // "unknown"')
+        # Allow 'provisioning' status — bot starts before activation completes
+        if [ "$reason" = "provisioning" ]; then
+            echo "Tenant is still provisioning. Starting anyway (will self-activate via provision-complete)."
+            return 0
+        fi
         echo "ERROR: Tenant validation failed — reason: ${reason}"
-        echo "Bot will not start. Tenant status must be 'active'."
+        echo "Bot will not start. Tenant status must be 'active' or 'provisioning'."
         exit 1
     fi
 
@@ -299,6 +304,41 @@ TOML_BASE
     generate_identity
 }
 
+# ─── Notify backend that provisioning is complete ────────────────
+
+notify_provision_complete() {
+    echo "Waiting for daemon to be ready..."
+
+    # Poll local health endpoint until it responds (max 60s)
+    local deadline=$((SECONDS + 60))
+    while [ $SECONDS -lt $deadline ]; do
+        if curl -sf http://localhost:8080/health > /dev/null 2>&1; then
+            echo "Daemon is healthy."
+            break
+        fi
+        sleep 2
+    done
+
+    echo "Notifying backend: provision-complete..."
+    local response
+    response=$(curl -sf -X POST "${BACKEND_URL}/provision-complete" \
+        -H "Content-Type: application/json" \
+        -H "x-service-key: ${SERVICE_AUTH_KEY}" \
+        -d "{\"tenant_id\": \"${TENANT_ID}\"}" 2>&1) || true
+
+    if [ -n "$response" ]; then
+        local success
+        success=$(echo "$response" | jq -r '.success // false')
+        if [ "$success" = "true" ]; then
+            echo "Backend notified: tenant is now active."
+        else
+            echo "WARNING: provision-complete response: $response"
+        fi
+    else
+        echo "WARNING: Could not reach backend for provision-complete. Will retry on next validation cycle."
+    fi
+}
+
 # ─── P2-11: Start Managed (daemon + sidecars) ────────────────────
 
 start_managed() {
@@ -322,6 +362,9 @@ start_managed() {
     zeroclaw daemon &
     DAEMON_PID=$!
     echo "ZeroClaw daemon started (PID: $DAEMON_PID)"
+
+    # Notify backend that bot is ready (runs in background, non-blocking)
+    notify_provision_complete &
 
     # Trap to clean up on exit
     trap "kill $health_pid $validation_pid $DAEMON_PID 2>/dev/null; exit" EXIT TERM INT
