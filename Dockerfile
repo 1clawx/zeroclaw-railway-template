@@ -34,7 +34,7 @@ RUN apt-get update && apt-get install -y \
 ARG ZEROCLAW_VERSION=v0.1.7
 ARG TARGETARCH
 RUN ARCH=$([ "$TARGETARCH" = "arm64" ] && echo "aarch64" || echo "x86_64") && \
-    curl -fsSL "https://github.com/zeroclaw-labs/zeroclaw/releases/download/${ZEROCLAW_VERSION}/zeroclaw-${ARCH}-unknown-linux-gnu.tar.gz" \
+    curl -fsSL --retry 3 --retry-delay 5 "https://github.com/zeroclaw-labs/zeroclaw/releases/download/${ZEROCLAW_VERSION}/zeroclaw-${ARCH}-unknown-linux-gnu.tar.gz" \
     | tar -xz -C /usr/local/bin zeroclaw \
     && chmod +x /usr/local/bin/zeroclaw
 
