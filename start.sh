@@ -256,7 +256,7 @@ validate_tenant_startup() {
     echo "Validating tenant with backend..."
 
     local response
-    response=$(curl -sf -X POST "${BACKEND_URL}/tenant-validate" \
+    response=$(curl -sf -X POST "${BACKEND_URL}/bot-stats" \
         -H "Content-Type: application/json" \
         -H "x-tenant-key: ${TENANT_AUTH_KEY}" \
         -d "{\"tenant_id\": \"${TENANT_ID}\"}" 2>&1) || true
@@ -290,7 +290,7 @@ validate_tenant_periodic() {
         sleep 300  # 5 minutes
 
         local response
-        response=$(curl -sf -X POST "${BACKEND_URL}/tenant-validate" \
+        response=$(curl -sf -X POST "${BACKEND_URL}/bot-stats" \
             -H "Content-Type: application/json" \
             -H "x-tenant-key: ${TENANT_AUTH_KEY}" \
             -d "{\"tenant_id\": \"${TENANT_ID}\"}" 2>&1) || true
