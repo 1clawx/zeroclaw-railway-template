@@ -290,9 +290,11 @@ generate_managed_config() {
         fi
     done
 
-    # Derive CLAUDE_CODE_ENABLED from BOT_CONFIG_JSON (defaults to false)
-    export CLAUDE_CODE_ENABLED
-    CLAUDE_CODE_ENABLED=$(echo "$BOT_CONFIG_JSON" | jq -r '.claude_code_enabled // "false"')
+    # Derive CLI gateway config from BOT_CONFIG_JSON
+    export COMMANDS_ENABLED
+    COMMANDS_ENABLED=$(echo "$BOT_CONFIG_JSON" | jq -r '.commands_enabled // "false"')
+    export COMMANDS_ALLOWED
+    COMMANDS_ALLOWED=$(echo "$BOT_CONFIG_JSON" | jq -r '.commands_allowed // "[\"claude\", \"git\", \"python3\", \"npm\"]"')
 
     # Render config.toml from template + dynamic sections
     render_config
