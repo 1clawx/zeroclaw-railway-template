@@ -203,9 +203,6 @@ render_identity() {
     # Append budget info
     append_budget_section
 
-    # Append enabled integrations
-    append_integrations_section
-
     echo "IDENTITY.md rendered."
 }
 
@@ -219,35 +216,6 @@ append_budget_section() {
         echo -e "\n${budget_text}" >> "$IDENTITY_FILE"
     fi
     # PAYG: no budget section — user manages their own balance
-}
-
-append_integrations_section() {
-    if [ -z "$BOT_CONFIG_JSON" ]; then
-        return
-    fi
-
-    local enabled
-    enabled=$(echo "$BOT_CONFIG_JSON" | jq -r '.integrations // {} | to_entries[] | select(.value == true) | .key')
-
-    if [ -z "$enabled" ]; then
-        return
-    fi
-
-    echo "" >> "$IDENTITY_FILE"
-    echo "## Enabled Integrations" >> "$IDENTITY_FILE"
-    echo "" >> "$IDENTITY_FILE"
-
-    for integration in $enabled; do
-        case "$integration" in
-            github)               echo "- **GitHub**: Access repos, issues, pull requests" >> "$IDENTITY_FILE" ;;
-            gmail)                echo "- **Gmail**: Read and draft emails" >> "$IDENTITY_FILE" ;;
-            google_docs)          echo "- **Google Docs**: Create and edit documents" >> "$IDENTITY_FILE" ;;
-            google_spreadsheet)   echo "- **Google Sheets**: Query and update spreadsheets" >> "$IDENTITY_FILE" ;;
-            notebook_llm)         echo "- **NotebookLM**: Access research notebooks" >> "$IDENTITY_FILE" ;;
-            opencode)             echo "- **OpenCode**: Run code in sandboxed environment" >> "$IDENTITY_FILE" ;;
-            jira)                 echo "- **Jira**: Manage tickets and sprints" >> "$IDENTITY_FILE" ;;
-        esac
-    done
 }
 
 # ─── Tenant Validation ───────────────────────────────────────────
