@@ -13,11 +13,12 @@ set -e
 LOCKFILE="/tmp/start.sh.lock"
 if [ -f "$LOCKFILE" ]; then
     EXISTING_PID=$(cat "$LOCKFILE" 2>/dev/null)
-    if [ -n "$EXISTING_PID" ] && kill -0 "$EXISTING_PID" 2>/dev/null; then
+    # Only treat as duplicate if the stored PID is a different, still-running start.sh.
+    # PID 1 (container init) is always alive on restart, so skip self-detection.
+    if [ -n "$EXISTING_PID" ] && [ "$EXISTING_PID" != "$$" ] && [ "$EXISTING_PID" != "1" ] && kill -0 "$EXISTING_PID" 2>/dev/null; then
         echo "start.sh is already running (PID: $EXISTING_PID). Exiting duplicate."
         exit 0
     fi
-    echo "Stale lockfile found (PID $EXISTING_PID not running). Cleaning up."
 fi
 echo $$ > "$LOCKFILE"
 trap "rm -f $LOCKFILE" EXIT
@@ -291,10 +292,8 @@ generate_managed_config() {
     done
 
     # Derive CLI gateway config from BOT_CONFIG_JSON
-    export COMMANDS_ENABLED
-    COMMANDS_ENABLED=$(echo "$BOT_CONFIG_JSON" | jq -r '.commands_enabled // "false"')
-    export COMMANDS_ALLOWED
-    COMMANDS_ALLOWED=$(echo "$BOT_CONFIG_JSON" | jq -r '.commands_allowed // "[\"claude\", \"git\", \"python3\", \"npm\"]"')
+    export CLI_GATEWAY_ALLOWED
+    CLI_GATEWAY_ALLOWED=$(echo "$BOT_CONFIG_JSON" | jq -r '.cli_gateway_allowed // "[]"')
 
     # Render config.toml from template + dynamic sections
     render_config

@@ -13,17 +13,23 @@ allowed_commands = ["*"]
 forbidden_paths = []
 max_actions_per_hour = 10000
 max_cost_per_day_cents = 100000
+non_cli_excluded_tools = ["browser_open", "screenshot"]
+auto_approve = ["*"]
+require_approval_for_medium_risk = false
+block_high_risk_commands = false
 
 [gateway]
 host = "0.0.0.0"
 port = 8080
-require_pairing = false
-allow_public_bind = true
+require_pairing = true
+allow_public_bind = false
 
 [browser]
 enabled = true
 allowed_domains = ["*"]
 backend = "agent_browser"
+native_headless = false
+native_webdriver_url = "http://127.0.0.1:9515"
 
 [http_request]
 enabled = true
@@ -38,9 +44,8 @@ enabled = true
 api_key = "${COMPOSIO_API_KEY}"
 entity_id = "${TENANT_ID}"
 
-[commands]
-enabled = ${COMMANDS_ENABLED}
-allowed = ${COMMANDS_ALLOWED}
+[cli_gateway]
+allowed = ${CLI_GATEWAY_ALLOWED}
 
 [channels_config]
 cli = false

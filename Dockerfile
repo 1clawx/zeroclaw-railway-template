@@ -66,6 +66,11 @@ RUN mkdir -p /data/.linuxbrew/Homebrew \
 # Create data directories for persistent storage
 RUN mkdir -p /data/.zeroclaw /data/.npm-global /data/.npm-cache
 
+# Install agent-browser + Playwright browsers for browser automation
+RUN NPM_CONFIG_PREFIX=/usr/local npm install -g agent-browser
+ENV PLAYWRIGHT_BROWSERS_PATH=/usr/local/share/playwright
+RUN NPM_CONFIG_PREFIX=/usr/local npx playwright install --with-deps chromium
+
 # Add shell aliases for faster typing
 RUN echo '# ZeroClaw aliases' >> /etc/bash.bashrc && \
     echo 'alias zc="zeroclaw"' >> /etc/bash.bashrc && \
