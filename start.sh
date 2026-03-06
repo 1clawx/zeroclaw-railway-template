@@ -255,39 +255,6 @@ append_budget_section() {
     # PAYG: no budget section — user manages their own balance
 }
 
-# ─── Claude Code conditional install ─────────────────────────────
-
-install_claude_code() {
-    if [ -z "$BOT_CONFIG_JSON" ]; then
-        return
-    fi
-
-    local enabled
-    enabled=$(echo "$BOT_CONFIG_JSON" | jq -r '.claude_code_enabled // false')
-
-    if [ "$enabled" != "true" ]; then
-        return
-    fi
-
-    # Check if already installed (persists across redeploys via /data/.npm-global)
-    if command -v claude &>/dev/null; then
-        echo "  Claude Code CLI already installed: $(claude --version 2>/dev/null || echo 'unknown version')"
-        return
-    fi
-
-    echo "  Installing Claude Code CLI..."
-    if npm install -g @anthropic-ai/claude-code; then
-        echo "  Claude Code CLI installed: $(claude --version 2>/dev/null || echo 'unknown version')"
-    else
-        echo "  WARNING: Claude Code CLI install failed. Bot will start without it."
-    fi
-}
-
-## NOTE: /claudecode is now handled as a native runtime command in the
-## ZeroClaw binary (ChannelRuntimeCommand::ClaudeCodeStart/Exit).
-## The old prompt-engineering approach (append_claude_code_section) has
-## been removed.
-
 # ─── Seed USER.md with defaults (preserves existing) ─────────────
 
 USER_MD_FILE="/data/.zeroclaw/USER.md"
@@ -335,9 +302,6 @@ generate_managed_config() {
 
     # Seed USER.md with defaults (only if it doesn't exist — preserves user customizations)
     seed_user_md
-
-    # Install Claude Code CLI if enabled in bot_config
-    install_claude_code
 }
 
 # ─── Start Managed (daemon + sidecars) ───────────────────────────
@@ -376,10 +340,6 @@ start_managed() {
 # ─── Shared Setup ─────────────────────────────────────────────────
 
 mkdir -p /data/.zeroclaw /data/.zeroclaw/logs /data/.npm-global /data/.npm-cache
-
-# Claude Code workspace + stale session cleanup
-mkdir -p /data/workspace
-rm -rf /data/.claude/remote-sessions 2>/dev/null || true
 
 # npm persistent storage
 npm config set prefix '/data/.npm-global'
