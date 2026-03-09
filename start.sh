@@ -159,15 +159,8 @@ append_model_routes() {
 
     local auto_routing
     auto_routing=$(echo "$BOT_CONFIG_JSON" | jq -r '.model_routing.auto_routing // true')
-    local fallback_model
-    fallback_model=$(echo "$BOT_CONFIG_JSON" | jq -r '.model_routing.fallback_model // empty')
 
-    # If auto_routing is false and we have a fallback, override default_model
-    if [ "$auto_routing" = "false" ] && [ -n "$fallback_model" ]; then
-        sed -i "s/^default_model = .*/default_model = \"${fallback_model}\"/" "$CONFIG_FILE"
-    fi
-
-    # Generate [[model_routes]] for each task
+    # Generate [[model_routes]] for each task (routes are pre-resolved model IDs)
     local tasks
     tasks=$(echo "$BOT_CONFIG_JSON" | jq -r '.model_routing.routes // {} | keys[]')
 
@@ -192,37 +185,31 @@ ROUTE
 enabled = true
 
 [[query_classification.rules]]
-hint = "coding"
-keywords = ["code", "function", "debug", "error", "compile", "implement", "fix", "bug", "syntax", "refactor", "test"]
-patterns = ["```", "fn ", "def ", "class ", "import ", "const ", "let ", "var "]
-priority = 20
+hint = "chat"
+keywords = ["hi", "hello", "thanks", "how are", "hey", "good morning", "good night", "what is", "explain", "tell me", "how does"]
+max_length = 100
+priority = 1
 
 [[query_classification.rules]]
-hint = "math_logic"
-keywords = ["calculate", "solve", "prove", "equation", "math", "formula", "theorem", "integral"]
-priority = 15
-
-[[query_classification.rules]]
-hint = "analysis"
-keywords = ["analyze", "compare", "evaluate", "assess", "review", "examine", "interpret"]
-min_length = 200
-priority = 10
-
-[[query_classification.rules]]
-hint = "research"
-keywords = ["research", "find", "search", "investigate", "look up", "what is", "explain", "how does"]
-priority = 10
-
-[[query_classification.rules]]
-hint = "writing"
-keywords = ["write", "draft", "compose", "essay", "article", "email", "summarize", "rewrite", "edit"]
+hint = "create"
+keywords = ["write", "draft", "compose", "essay", "article", "email", "summarize", "rewrite", "edit", "caption", "translate", "letter", "blog", "post"]
 priority = 8
 
 [[query_classification.rules]]
-hint = "general_chat"
-keywords = ["hi", "hello", "thanks", "how are", "hey", "good morning", "good night"]
-max_length = 50
-priority = 1
+hint = "think"
+keywords = ["analyze", "compare", "evaluate", "research", "investigate", "calculate", "solve", "prove", "equation", "math", "plan", "strategy", "review"]
+min_length = 100
+priority = 15
+
+[[query_classification.rules]]
+hint = "work"
+keywords = ["browse", "post", "share", "login", "click", "open", "navigate", "social", "facebook", "instagram", "twitter", "linkedin", "send", "schedule"]
+priority = 12
+
+[[query_classification.rules]]
+hint = "compute"
+keywords = ["file", "convert", "resize", "download", "upload", "extract", "process", "run", "script", "csv", "pdf", "image", "zip", "compress"]
+priority = 10
 CLASSIFICATION
     fi
 
