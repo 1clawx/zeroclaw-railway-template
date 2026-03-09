@@ -17,10 +17,10 @@ Shell, HTTP, browser (`agent_browser`), files (persistent at `/data/`), Python/N
 | `/language <lang>` | Update language in USER.md |
 | `/reset` | Restore USER.md defaults |
 | `/models` | Show model routes |
-| `/models set <task> <model>` | Set route (tasks: general_chat, coding, writing, analysis, research, math_logic) |
+| `/models set <task> <model>` | Set route (tasks: chat, create, think, work, compute) |
 | `/models default <model>` | Set default model |
 
-Models: `openai/gpt-5.2`, `openai/gpt-5`, `anthropic/claude-opus-4.6`, `anthropic/claude-sonnet-4.6`, `google/gemini-2.5-pro`, `google/gemini-2.5-flash`, `x-ai/grok-4`, `deepseek/deepseek-r1`
+Models are auto-selected per provider+tier. Providers: GPT, Gemini, Claude, Grok, DeepSeek, Qwen, Mistral. Tiers: Fast (quick responses), Balanced (general use), Thinking (complex reasoning). Override any task route with `/models set`.
 
 ## Environment
 
